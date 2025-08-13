@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./style.css">
+    
+    <title>Library - The Odin Project</title>
+</head>
+<body>
+    <div id="container">
+        <div id="add-book">
+
+            <dialog id="book-dialog">
+                <form id="dialogForm">
+                    <h2>Add a New Book to the Library</h2>
+                    <div id="book-form">
+                        <label for="name">Book name: </label>
+                        <input type="text" id="name" name="name" required />
+                        <label for="author">Author: </label>
+                        <input type="text" id="author" name="author" required />
+                        <label for="pages">Pages: </label>
+                        <input type="number" id="pages" name="pages" min="1" max="10000" required />
+                        <label for="status">Status: </label>
+                        <div id="status-box">
+                        <label>
+                            <input type="radio" name="status" value="Read" >
+                            Read
+                        </label>
+                        <label>
+                            <input type="radio" name="status" value="Not Read" checked>
+                            Not Read
+                        </label>
+                        </div>
+                    </div>
+                    <div id="book-form-buttons">
+                        <button type="submit" id="add-new-book">Add Book</button>
+                        <button type="button" id="close-dialog">Close</button>
+                    </div>
+                </form>
+            </dialog>
+
+            <button id="new-book-dialog">New Book</button>
+        </div>
+        <div id="library-content">
+        <table id="books">
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Pages</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </table>
+        </div>
+    </div>
+<script src="./library.js"></script>
+</body>
+</html>
