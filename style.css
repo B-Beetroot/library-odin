@@ -18,6 +18,11 @@ body {
     background-color: var(--violet-jtc);
 }
 
+#library-title {
+    color: var(--celadonDark);
+    margin-bottom: 50px;
+}
+
 #container {
     display: flex;
     flex-direction: column;

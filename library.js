@@ -1,112 +1,118 @@
 
-const dialog = document.querySelector("#book-dialog");
-const openBtn = document.querySelector("#new-book-dialog");
-const closeBtn = document.querySelector("#close-dialog");
-
-const form = document.querySelector("#dialogForm");
-
-const tableBooks = document.querySelector('#books');
-
-const myLibrary = [];
-
-if (myLibrary.length === 0) {
-    tableBooks.style.display = "none";
-}
-
-function Book(title, author, pages, hasRead) {
-    if (!new.target) {
-        throw Error("You must use the 'new' operator to call the constructor");
+class Book {
+    constructor(title, author, pages, hasRead) {
+        this.id = crypto.randomUUID();
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.hasRead = hasRead;
     }
-    this.id = crypto.randomUUID();
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.hasRead = hasRead;
+
+    toggleReadStatus () {
+        this.hasRead = this.hasRead === "Read" ? "Not Read" : "Read";
+    };
 }
 
-function addBookToLibrary(name, author, pages, hasRead) { 
-    const addBook = new Book(name, author, pages, hasRead); 
-    myLibrary.push(addBook) 
-}
+class Library {
+    constructor() {
+        this.dialog = document.querySelector("#book-dialog");
+        this.openBtn = document.querySelector("#new-book-dialog");
+        this.closeBtn = document.querySelector("#close-dialog");
+        this.form = document.querySelector("#dialogForm");
+        this.tableBooks = document.querySelector('#books');
 
-Book.prototype.toggleReadStatus = function() {
-    this.hasRead = this.hasRead === "Read" ? "Not Read" : "Read";
-};
+        this.myLibrary = [];
 
-function addBookTable(book) {
-    const row = document.createElement("tr");
-    row.setAttribute("data-id", book.id);
+        this._init();
+    }
 
-    const titleCell = document.createElement("td");
-    titleCell.textContent = book.title;
-    row.appendChild(titleCell);
+    _init() {
+        this._toggleTable();
+        this.openBtn.addEventListener("click", () => this.dialog.showModal());
+        this.closeBtn.addEventListener("click", () => this.dialog.close());
+        this.form.addEventListener("submit", this._handleSubmit.bind(this));
+    }
 
-    const authorCell = document.createElement("td");
-    authorCell.textContent = book.author;
-    row.appendChild(authorCell);
+    _toggleTable() {
+        this.tableBooks.style.display =
+        this.myLibrary.length > 0 ? "table" : "none";
+    }
 
-    const pagesCell = document.createElement("td");
-    pagesCell.textContent = book.pages;
-    row.appendChild(pagesCell);
+    _handleSubmit(event) {
+        event.preventDefault();
 
-    const statusCell = document.createElement("td");
-    statusCell.textContent = book.hasRead;
-    row.appendChild(statusCell);
+        const title   = this.form.title.value;
+        const author  = this.form.author.value;
+        const pages   = this.form.pages.value;
+        const status  = this.form.status.value;
 
-    const actionCell = document.createElement("td");
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "Remove";
-    removeBtn.classList.add("remove-btn");
+        this._addBook({ title, author, pages, hasRead: status });
 
-    removeBtn.addEventListener("click", () => {
-        row.remove();
+        this.dialog.close();
+        this.form.reset();
+    }
 
-        const index = myLibrary.findIndex(b => b.id === book.id);
-        if (index !== -1) {
-            myLibrary.splice(index, 1);
-        }
-        
-        if (myLibrary.length === 0) {
-            tableBooks.style.display = "none";
-        }
-    });
-
-    const toggleBtn = document.createElement("button");
-    toggleBtn.textContent = "Toggle Status";
-    toggleBtn.addEventListener("click", () => {
-        book.toggleReadStatus();
-        statusCell.textContent = book.hasRead;
-    });
-
-
-    actionCell.appendChild(toggleBtn);
-    actionCell.appendChild(removeBtn);
+    _addBook({ title, author, pages, hasRead }) {
+        const book = new Book(title, author, pages, hasRead);
+        this.myLibrary.push(book);
+        this._updateRow(book);
+        this._toggleTable();
+    }
     
-    row.appendChild(actionCell);
+    _removeBook(id, rowElement) {
+        rowElement.remove();
+        this.myLibrary = this.myLibrary.filter(book => book.id !== id);
+        this._toggleTable();
+    }
 
-    tableBooks.appendChild(row);
+    _updateRow(book) {
+        const row = document.createElement("tr");
+        row.setAttribute("data-id", book.id);
+
+        const titleCell = document.createElement("td");
+        titleCell.textContent = book.title;
+        row.appendChild(titleCell);
+
+        const authorCell = document.createElement("td");
+        authorCell.textContent = book.author;
+        row.appendChild(authorCell);
+
+        const pagesCell = document.createElement("td");
+        pagesCell.textContent = book.pages;
+        row.appendChild(pagesCell);
+
+        const statusCell = document.createElement("td");
+        statusCell.textContent = book.hasRead;
+        row.appendChild(statusCell);
+
+        const actionCell = document.createElement("td");
+        
+        const toggleBtn = document.createElement("button");
+        toggleBtn.textContent = "Toggle Status";
+
+        toggleBtn.addEventListener("click", () => {
+            book.toggleReadStatus();
+            statusCell.textContent = book.hasRead;
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remove";
+        removeBtn.classList.add("remove-btn");
+
+        removeBtn.addEventListener("click", () => {
+            this._removeBook(book.id, row);
+        });
+
+        actionCell.appendChild(toggleBtn);
+        actionCell.appendChild(removeBtn);
+        
+        row.appendChild(actionCell);
+
+        this.tableBooks.appendChild(row);
+    }
 }
 
-form.addEventListener("submit", function(event) {
-    event.preventDefault();
-    const name = document.querySelector("#name").value;
-    const author = document.querySelector("#author").value;
-    const pages = document.querySelector("#pages").value;
-    const hasRead = document.querySelector('input[name="status"]:checked').value;
-    addBookToLibrary(name, author, pages, hasRead);
-    addBookTable(myLibrary[myLibrary.length - 1]);
-    if (myLibrary.length !== 0) {
-    tableBooks.style.display = "block";
-    }
-    dialog.close();
-    form.reset();
-});
-
-openBtn.addEventListener("click", () => {
-    dialog.showModal();
-});
-
-closeBtn.addEventListener("click", () => {
-    dialog.close();
+document.addEventListener("DOMContentLoaded", () => {
+  new Library();
 });
 
