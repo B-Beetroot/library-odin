@@ -1,4 +1,3 @@
-
 class Book {
     constructor(title, author, pages, hasRead) {
         this.id = crypto.randomUUID();
@@ -31,6 +30,12 @@ class Library {
         this.openBtn.addEventListener("click", () => this.dialog.showModal());
         this.closeBtn.addEventListener("click", () => this.dialog.close());
         this.form.addEventListener("submit", this._handleSubmit.bind(this));
+
+        Array.from(this.form.elements).forEach(el => {
+            if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement) {
+                el.addEventListener('input', () => el.setCustomValidity(''));
+            }
+        });
     }
 
     _toggleTable() {
@@ -41,12 +46,40 @@ class Library {
     _handleSubmit(event) {
         event.preventDefault();
 
-        const title   = this.form.title.value;
-        const author  = this.form.author.value;
-        const pages   = this.form.pages.value;
-        const status  = this.form.status.value;
+        const title   = this.form.title;
+        const author  = this.form.author;
+        const pages   = this.form.pages;
+        const status  = this.form.status;
 
-        this._addBook({ title, author, pages, hasRead: status });
+        let isValid = true;
+
+        if (title.value.trim() === "") {
+            title.setCustomValidity("The book title must be filled!");
+            isValid = false;
+        }
+
+        if (author.value.trim() === "") {
+            author.setCustomValidity("The author name must be filled!");
+            isValid = false;
+        }
+
+        const pageNum = parseInt(pages.value, 10);
+        if (isNaN(pageNum) || pageNum < 1 || pageNum > 10000) {
+            pages.setCustomValidity("Please enter a valid number of pages (1–10,000).");
+            isValid = false;
+        }
+
+        if (!isValid) {
+            this.form.reportValidity();
+            return;
+        }
+
+        this._addBook({ 
+            title: title.value.trim(), 
+            author: author.value.trim(), 
+            pages: pageNum, 
+            hasRead: status.value 
+        });
 
         this.dialog.close();
         this.form.reset();
@@ -115,4 +148,3 @@ class Library {
 document.addEventListener("DOMContentLoaded", () => {
   new Library();
 });
-
